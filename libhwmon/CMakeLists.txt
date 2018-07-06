@@ -14,6 +14,9 @@ endif ()
 
 target_link_libraries(hwmon ${HWMON_LINK_LIBRARIES})
 target_include_directories(hwmon PRIVATE ..)
+if(NOT OpenCL_INCLUDE_DIR STREQUAL "")
+	target_include_directories(hwmon BEFORE PRIVATE ${OpenCL_INCLUDE_DIR})
+endif()
 
 if (ETHASHCUDA)
 	find_package(CUDA REQUIRED)

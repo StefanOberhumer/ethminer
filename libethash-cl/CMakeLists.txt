@@ -24,8 +24,55 @@ if(APPLE)
 	# On macOS use system OpenCL library.
 	find_package(OpenCL REQUIRED)
 else()
-	hunter_add_package(OpenCL)
-	find_package(OpenCL CONFIG REQUIRED)
+	if(NOT OpenCL_INCLUDE_DIR STREQUAL "")
+		# Run cmake .. \
+		#           -DOpenCL_INCLUDE_DIR=/home/hosts/amd64-linux/build/MYOWNCL/build/CL/include \
+		#           -DOpenCL_LIBRARY=/home/hosts/amd64-linux/build/MYOWNCL/build/CL/lib/libOpenCL.a
+		# which sets:
+		#    OpenCL_INCLUDE_DIR=/home/hosts/amd64-linux/build/MYOWNCL/build/CL/include
+		#    OpenCL_LIBRARY=/home/hosts/amd64-linux/build/MYOWNCL/build/CL/lib/libOpenCL.a
+
+		# Do the things like the hunter package file does
+		# see ~/.hunter/_Base/0XXXXXX/0YYYYYY/0ZZZZZ/Install/lib/cmake/OpenCL/* files
+		#          starting with OpenCLConfig.cmake
+		# If we have a OpenCLConfig.cmake in our own CL build we can try using
+		#    find_package(OpenCL CONFIG REQUIRED HINTS /home/hosts/amd64-linux/build/MYOWNCL/build/CL)
+
+		include(CMakeFindDependencyMacro)
+		find_dependency(Threads)
+
+		# TODO: check if we link static or the dll
+		# Create imported target OpenCL::OpenCL - static
+		#add_library(OpenCL::OpenCL STATIC IMPORTED)
+
+		# or as dll (so)
+		add_library(OpenCL::OpenCL SHARED IMPORTED)
+
+		set_target_properties(OpenCL::OpenCL PROPERTIES
+			INTERFACE_INCLUDE_DIRECTORIES "${OpenCL_INCLUDE_DIR}"
+			INTERFACE_LINK_LIBRARIES "\$<LINK_ONLY:Threads::Threads>;\$<LINK_ONLY:dl>"
+		)
+		set_property(TARGET OpenCL::OpenCL APPEND PROPERTY IMPORTED_CONFIGURATIONS RELEASE)
+		set_target_properties(OpenCL::OpenCL PROPERTIES
+		  IMPORTED_LINK_INTERFACE_LANGUAGES_RELEASE "C"
+		  IMPORTED_LOCATION_RELEASE "${OpenCL_LIBRARY}"
+		  )
+
+		include_directories(BEFORE "${OpenCL_INCLUDE_DIR}")
+
+		# todo: set OpenCL version
+
+		set(OpenCL_FOUND "1")
+		message(STATUS "Using own OPENCL")
+		message(STATUS "    Include ${OpenCL_INCLUDE_DIR}")
+		message(STATUS "    Library ${OpenCL_LIBRARY}")
+	else()
+		hunter_add_package(OpenCL)
+		find_package(OpenCL CONFIG REQUIRED)
+		#message(STATUS "OpenCL Info:")
+		message(STATUS "Used OpenCL Package File: ${OpenCL_CONFIG}")
+		#message(FATAL_ERROR "ERROR")
+	endif()
 endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR})

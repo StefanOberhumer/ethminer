@@ -28,6 +28,12 @@ if(APICORE)
 	target_link_libraries(ethminer PRIVATE apicore)
 endif()
 
+if(ETHASHCL)
+	if(NOT OpenCL_INCLUDE_DIR STREQUAL "")
+		target_include_directories(ethminer BEFORE PRIVATE ${OpenCL_INCLUDE_DIR})
+	endif()
+endif()
+
 include(GNUInstallDirs)
 install(TARGETS ethminer DESTINATION ${CMAKE_INSTALL_BINDIR})
 if(MSVC)
