@@ -1165,7 +1165,7 @@ void EthStratumClient::processResponse(Json::Value& responseObject)
             if (jPrm.isArray())
             {
                 std::string enonce = jPrm.get(Json::Value::ArrayIndex(0), "").asString();
-                if (!enonce.empty()) 
+                if (!enonce.empty())
                     processExtranonce(enonce);
             }
         }
