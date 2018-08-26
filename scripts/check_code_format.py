@@ -14,7 +14,7 @@ import getopt, os, re, sys
 
 class opts:
     verbose = 1
-    recursive = True
+    recursive = False
     warn = False
 
 
@@ -110,16 +110,14 @@ def do_one_file(filename):
 
 def do_one_directory(directory):
     r = 0
+
     for root, dirs, files in os.walk(directory, topdown=True):
         for name in files:
+            #print(os.path.join(root, name))
             if do_one_file(os.path.join(root, name)):
                 r = 1
-            #print(os.path.join(root, name))
-        if opts.recursive:
-            for name in dirs:
-                #print(os.path.join(root, name))
-                if do_one_directory(os.path.join(root, name)):
-                    r = 1
+        if not opts.recursive:
+            break
     return r
 
 
@@ -129,6 +127,7 @@ def display_usage(argv):
     print "  -q, --quiet                    decrease logging level"
     print "  -h, --help                     display this page"
     print
+    print "  -r, --recursive                if given a directory check all recursive"
     print "  -w, --warn                     just warn, don't exit with an error"
 
 
@@ -136,9 +135,9 @@ def main(argv):
     try: assert 0
     except AssertionError: pass
     else: raise Exception("fatal error - assertions not enabled")
-    shortopts, longopts = "hqvw", [
+    shortopts, longopts = "hqvrw", [
         "help", "quiet","verbose",
-        "warn",
+        "recusrive", "warn",
     ]
     xopts, args = getopt.gnu_getopt(argv[1:], shortopts, longopts)
     for opt, optarg in xopts:
@@ -149,6 +148,8 @@ def main(argv):
         elif opt in ["-h", "--help"]:
             display_usage(argv)
             return 0
+        elif opt in ["-r", "--recursive"]:
+            opts.recursive = True
         elif opt in ["-w", "--warn"]:
             opts.warn = True
 
