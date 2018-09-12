@@ -990,6 +990,7 @@ Json::Value ApiConnection::getMinerStatDetail()
 
     SolutionStats s = m_farm.getSolutionStats();
     WorkingProgress p = m_farm.miningProgress();
+    WorkPackage w = m_farm.work();
 
     // ostringstream version;
     Json::Value gpus;
@@ -1014,10 +1015,16 @@ Json::Value ApiConnection::getMinerStatDetail()
     jconnection["user"] = connection.User();  // TODO - only if we've write access ? */
     jconnection["password"] = connection.Pass(); // TODO - only if we've write access ? */
     jconnection["isconnected"] = m_mgr.isConnected();
+    jconnection["switched"] = m_mgr.getConnectionSwitches();
     jRes["connection"] = jconnection;
 
     /* Pool info */
     jRes["difficulty"] = m_mgr.getCurrentDifficulty();
+    if (w)
+        jRes["epoch"] = w.epoch;
+    else
+        jRes["epoch"] = -1;
+    jRes["epoch_changes"] = m_mgr.getEpochChanges();
 
     /* basic setup */
     auto tstop = m_farm.get_tstop();
